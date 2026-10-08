@@ -21,6 +21,7 @@
 
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "Ai/Dungeon/DungeonClear/Util/DcPlayerbotCompat.h"
 #include "Playerbots.h"
 
 #include "Ai/Dungeon/DungeonClear/Settings/DcSettings.h"
@@ -36,7 +37,7 @@ namespace
 
     bool IsBotNotSelf(Player* p)
     {
-        return GET_PLAYERBOT_AI(p) && !IsSelfBot(p);
+        return GET_PLAYERBOT_AI(p) && !DcPlayerbotCompat::IsSelfBot(p);
     }
 
     std::uint8_t SideOf(Player* p)

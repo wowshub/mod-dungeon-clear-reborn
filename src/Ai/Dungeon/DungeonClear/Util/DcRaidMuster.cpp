@@ -8,6 +8,7 @@
 #include "DcRun.h"
 #include "Ai/Dungeon/DungeonClear/Data/DungeonBossInfo.h"
 #include "Ai/Dungeon/DungeonClear/Settings/DcSettings.h"
+#include "Ai/Dungeon/DungeonClear/Util/DcPlayerbotCompat.h"
 #include "Ai/Dungeon/DungeonClear/Util/DcRaidMusterDecision.h"
 #include "Ai/Dungeon/DungeonClear/Util/DcStatusPublisher.h"
 #include "Group.h"
@@ -66,9 +67,12 @@ void IssueRebuffRound(Player* bot)
         PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
         if (!memberAI)
             continue;  // humans buff themselves
+        // Older playerbots have no rebuff window (nor the strategy) — skip the round.
+        if (!DcPlayerbotCompat::HasForceRebuff(memberAI))
+            continue;
         if (!memberAI->HasStrategy("force rebuff", BOT_STATE_NON_COMBAT))
             memberAI->ChangeStrategy("+force rebuff", BOT_STATE_NON_COMBAT);
-        memberAI->forceRebuff.Begin(/*replyToReadyCheck*/ false);
+        DcPlayerbotCompat::ForceRebuffBegin(memberAI, /*replyToReadyCheck*/ false);
     }
 }
 
@@ -90,7 +94,7 @@ void CancelRebuffRound(Player* bot)
         if (!member || member->GetMapId() != bot->GetMapId())
             continue;
         if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-            memberAI->forceRebuff.End();
+            DcPlayerbotCompat::ForceRebuffEnd(memberAI);
     }
 }
 }
@@ -153,7 +157,7 @@ bool DcRaidMuster::Holds(Player* bot, PlayerbotAI* botAI, AiObjectContext* conte
                 continue;
             if (member != bot && bot->GetDistance(member) > spread)
                 staged = false;
-            if (memberAI->forceRebuff.IsPending())
+            if (DcPlayerbotCompat::ForceRebuffPending(memberAI))
                 rebuffPending = true;
         }
     }

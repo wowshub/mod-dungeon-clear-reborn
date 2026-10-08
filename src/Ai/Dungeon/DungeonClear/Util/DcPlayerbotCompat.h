@@ -83,6 +83,48 @@ namespace DcPlayerbotCompat
         return DcPlayerbotCompat::IsRealPlayer(player)
             || DcPlayerbotCompat::IsSelfBot(player);
     }
+
+    // The raid muster's rebuff window: PlayerbotAI::forceRebuff (a
+    // ForceRebuffState) and the "force rebuff" strategy that drives it exist
+    // only on newer mod-playerbots. Older checkouts (RebornWOW's, ~PR #2561)
+    // have neither, so a direct `ai->forceRebuff` does not compile there.
+    //
+    // Detected per call with a C++20 requires-expression, the same way
+    // DcCoreCompat.h tells the cores apart. The parameter is a template so the
+    // test is dependent: on a branch without the member the discarded
+    // `if constexpr` arm is never instantiated. Without the window the muster
+    // simply has no rebuff round — nothing is pending, so it counts as done.
+    template <typename AI>
+    inline bool HasForceRebuff(AI* ai)
+    {
+        if constexpr (requires { ai->forceRebuff.IsPending(); })
+            return ai != nullptr;
+        else
+            return false;
+    }
+
+    template <typename AI>
+    inline void ForceRebuffBegin(AI* ai, bool replyToReadyCheck)
+    {
+        if constexpr (requires { ai->forceRebuff.Begin(replyToReadyCheck); })
+            ai->forceRebuff.Begin(replyToReadyCheck);
+    }
+
+    template <typename AI>
+    inline void ForceRebuffEnd(AI* ai)
+    {
+        if constexpr (requires { ai->forceRebuff.End(); })
+            ai->forceRebuff.End();
+    }
+
+    template <typename AI>
+    inline bool ForceRebuffPending(AI* ai)
+    {
+        if constexpr (requires { ai->forceRebuff.IsPending(); })
+            return ai->forceRebuff.IsPending();
+        else
+            return false;
+    }
 }
 
 #endif

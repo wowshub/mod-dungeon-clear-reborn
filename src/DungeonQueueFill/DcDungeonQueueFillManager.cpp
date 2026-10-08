@@ -14,6 +14,7 @@
 #include "WorldPacket.h"
 
 #include "PlayerbotAI.h"
+#include "Ai/Dungeon/DungeonClear/Util/DcPlayerbotCompat.h"
 #include "Playerbots.h"
 
 #include "DcModuleEnable.h"
@@ -72,7 +73,7 @@ std::string DcDungeonQueueFillManager::RefuseReason(Player* player,
     // itself — there is a real person at the keyboard who opened the Dungeon
     // Finder and clicked Find Group, which is the exact case this feature
     // exists for. Testing GET_PLAYERBOT_AI alone refused every one of them.
-    if (GET_PLAYERBOT_AI(player) && !IsSelfBot(player))
+    if (GET_PLAYERBOT_AI(player) && !DcPlayerbotCompat::IsSelfBot(player))
         return "queuing character is a bot";
 
     std::uint32_t const minLevel =
